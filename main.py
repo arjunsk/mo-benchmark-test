@@ -33,12 +33,11 @@ def run():
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    sql_insert = text("insert into speedtest (id, one_k_vector) "
-                      "values(:id, (cast( cast(:data as TEXT) as vecf32(:vec_len))));")
+    sql_insert = text("insert into speedtest (id, one_k_vector) values(:id, decode(:data,'hex') );")
     for i in range(num_inserts * num_vector_per_insert):
         arr = np.random.rand(vec_len)
         # print(arr)
-        session.execute(sql_insert, {"id": i, "data": to_db_binary(arr), "vec_len": vec_len})
+        session.execute(sql_insert, {"id": i, "data": to_db_binary(arr)})
     session.commit()
 
 
