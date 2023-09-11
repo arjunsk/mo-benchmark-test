@@ -12,8 +12,8 @@ from sqlalchemy.orm import sessionmaker
 
 table_name = "speedtest"
 vec_len = 1024
-num_inserts = 1024 * 8
-num_vector_per_insert = 5
+num_sql_stmt = 1024 * 8
+num_vector_per_sql_stmt = 5
 
 
 def to_db_hex(value, dim=None):
@@ -84,7 +84,7 @@ def insert():
     start_id = get_max_id(engine) + 1
 
     sql_insert = text("insert into speedtest (id, one_k_vector) values(:id, decode(:data,'hex') );")
-    for i in range(num_inserts * num_vector_per_insert):
+    for i in range(num_sql_stmt * num_vector_per_sql_stmt):
         arr = np.random.rand(vec_len)
         # print(arr)
         session.execute(sql_insert, {"id": start_id + i, "data": to_db_hex(arr)})
@@ -99,9 +99,10 @@ def select_hex():
 
 correctness_test()
 
-start = time.time()
-insert()
-duration = time.time() - start
-print(f"Result: vector dim={vec_len} vectors "
-      f"inserted={num_inserts * num_vector_per_insert} "
-      f"insert/second={num_inserts * num_vector_per_insert / duration}")
+for func in [insert, select_string, select_string]:
+    start = time.time()
+    func()
+    duration = time.time() - start
+    print(f"{func.__name__} Result: vector dim={vec_len} vectors "
+          f"rows={num_sql_stmt * num_vector_per_sql_stmt} "
+          f"rows/second={num_sql_stmt * num_vector_per_sql_stmt / duration}")
