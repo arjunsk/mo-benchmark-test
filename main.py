@@ -28,6 +28,12 @@ def to_db_hex(value, dim=None):
     # return value.tobytes()
     return binascii.b2a_hex(value)
 
+
+def from_db_hex(hex_str):
+    buf = binascii.a2b_hex(hex_str)
+    return np.frombuffer(buf, dtype='<f')
+
+
 def correctness_test():
     engine = create_engine("mysql+pymysql://root:111@127.0.0.1:6001/a")
 
@@ -45,7 +51,6 @@ def correctness_test():
     data = [np.random.rand(vec_len), np.random.rand(vec_len)]
     sql_insert = text("insert into speedtest (id, one_k_vector) values(:id, decode(:data,'hex') );")
     for i, arr in enumerate(data):
-        print("XXX", new_id + i)
         session.execute(sql_insert, {"id": new_id + i, "data": to_db_hex(arr)})
     session.commit()
 
@@ -54,18 +59,20 @@ def correctness_test():
 
     # select using string output
     with engine.connect() as con:
-        rs = con.execute(text(f'SELECT * FROM speedtest WHERE id >= {new_id}'))
+        rs = con.execute(text(f'SELECT * FROM speedtest WHERE id >= {new_id} order by id'))
+        data_read = []
         for row in rs:
-            print("XXXXXX", row)
-        import ipdb; ipdb.set_trace()
+            s = row[1].lstrip().lstrip("[").rstrip().rstrip("]")
+            data_read.append(np.fromstring(s, sep=","))
+        assert np.allclose(data, data_read)
 
     # select using hex output
     with engine.connect() as con:
-        rs = con.execute(text(f'SELECT id, encode(one_k_vector, "hex") FROM speedtest WHERE id >= {new_id}'))
+        rs = con.execute(text(f'SELECT id, encode(one_k_vector, "hex") FROM speedtest WHERE id >= {new_id} order by id'))
+        data_read = []
         for row in rs:
-            print("XXXXXX", row)
-        import ipdb; ipdb.set_trace()
-
+            data_read.append(from_db_hex(row[1]))
+        assert np.allclose(data, data_read)
 
 
 def insert():
