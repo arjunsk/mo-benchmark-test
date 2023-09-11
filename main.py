@@ -112,7 +112,6 @@ def select_hex():
         rs = con.execute(text(f'SELECT * FROM speedtest WHERE id >= {start_id}'))
         total = 0
         for row in rs:
-            s = row[1].lstrip().lstrip("[").rstrip().rstrip("]")
             v = from_db_hex(row[1])
             total += 1
         assert total == num_sql_stmt * num_vector_per_sql_stmt
