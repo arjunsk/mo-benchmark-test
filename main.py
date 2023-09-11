@@ -34,17 +34,18 @@ def from_db_hex(hex_str):
     return np.frombuffer(buf, dtype='<f')
 
 
+def get_max_id(engine):
+    with engine.connect() as con:
+        rs = con.execute(text('SELECT MAX(id) FROM speedtest'))
+        max_id = next(rs)[0]
+    return max_id
+
+
 def correctness_test():
     engine = create_engine("mysql+pymysql://root:111@127.0.0.1:6001/a")
 
     # insert 2 new rows
-    def get_max_id():
-        with engine.connect() as con:
-            rs = con.execute(text('SELECT MAX(id) FROM speedtest'))
-            max_id = next(rs)[0]
-        return max_id
-
-    new_id = get_max_id() + 1
+    new_id = get_max_id(engine) + 1
 
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -54,7 +55,7 @@ def correctness_test():
         session.execute(sql_insert, {"id": new_id + i, "data": to_db_hex(arr)})
     session.commit()
 
-    new_max_id = get_max_id()
+    new_max_id = get_max_id(engine)
     assert new_max_id == new_id + 1
 
     # select using string output
@@ -80,13 +81,21 @@ def insert():
     Session = sessionmaker(bind=engine)
     session = Session()
 
+    start_id = get_max_id(engine) + 1
+
     sql_insert = text("insert into speedtest (id, one_k_vector) values(:id, decode(:data,'hex') );")
     for i in range(num_inserts * num_vector_per_insert):
         arr = np.random.rand(vec_len)
         # print(arr)
-        session.execute(sql_insert, {"id": i, "data": to_db_hex(arr)})
+        session.execute(sql_insert, {"id": start_id + i, "data": to_db_hex(arr)})
     session.commit()
 
+def select_string():
+    pass
+
+
+def select_hex():
+    pass
 
 correctness_test()
 
