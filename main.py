@@ -14,6 +14,7 @@ table_name = "speedtest"
 vec_len = 1024
 num_sql_stmt = 1024 * 8
 num_vector_per_sql_stmt = 5
+start_id = None
 
 
 def to_db_hex(value, dim=None):
@@ -81,6 +82,7 @@ def insert():
     Session = sessionmaker(bind=engine)
     session = Session()
 
+    global start_id
     start_id = get_max_id(engine) + 1
 
     sql_insert = text("insert into speedtest (id, one_k_vector) values(:id, decode(:data,'hex') );")
@@ -91,11 +93,30 @@ def insert():
     session.commit()
 
 def select_string():
-    pass
+    engine = create_engine("mysql+pymysql://root:111@127.0.0.1:6001/a")
+    global start_id
+    with engine.connect() as con:
+        rs = con.execute(text(f'SELECT * FROM speedtest WHERE id >= {start_id}'))
+        total = 0
+        for row in rs:
+            s = row[1].lstrip().lstrip("[").rstrip().rstrip("]")
+            v = np.fromstring(s, sep=",")
+            total += 1
+        assert total == num_sql_stmt * num_vector_per_sql_stmt
 
 
 def select_hex():
-    pass
+    engine = create_engine("mysql+pymysql://root:111@127.0.0.1:6001/a")
+    global start_id
+    with engine.connect() as con:
+        rs = con.execute(text(f'SELECT * FROM speedtest WHERE id >= {start_id}'))
+        total = 0
+        for row in rs:
+            s = row[1].lstrip().lstrip("[").rstrip().rstrip("]")
+            v = from_db_hex(row[1])
+            total += 1
+        assert total == num_sql_stmt * num_vector_per_sql_stmt
+
 
 correctness_test()
 
