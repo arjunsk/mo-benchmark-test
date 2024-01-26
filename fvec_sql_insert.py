@@ -1,3 +1,5 @@
+# create database a;
+# use a;
 # create table t3(a int, b vecf32(128));
 import binascii
 import time
@@ -32,17 +34,27 @@ def fvecs_read(filename, c_contiguous=True):
 
 
 def run():
-    engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/a")
+    # use pymysql
+    engine = create_engine("mysql+pymysql://root:111@127.0.0.1:6001/a")
     Session = sessionmaker(bind=engine)
     session = Session()
 
     sql_insert = text("INSERT INTO t3 (a, b) VALUES (:id, decode(:data,'hex'));")
 
+    start = time.time()
     vecList = fvecs_read("/Users/arjunsunilkumar/Downloads/benchmark/1million128/sift/sift_base.fvecs")
-
+    binVecList = []
     for i in range(0, len(vecList)):
-        session.execute(sql_insert, {"id": i, "data": to_db_binary(vecList[i])})
-        session.commit()
+        binVecList.append(to_db_binary(vecList[i]))
+    print(f"binary duration={time.time() - start}")
+
+    for i in range(0, len(binVecList)):
+        session.execute(sql_insert, {"id": i, "data": binVecList[i]})
+        if i % 1000 == 0:
+            print(f"inserted {i}")
+
+    # commit last
+    session.commit()
 
 
 def main():
