@@ -1,6 +1,8 @@
-# create database a;
-# use a;
-# create table t3(a int, b vecf32(128));
+"""
+create database a;
+use a;
+create table t3(a int, b vecf32(128));
+"""
 import binascii
 import time
 
