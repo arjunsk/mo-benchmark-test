@@ -5,16 +5,13 @@ import struct
 
 def read_fvecs_file(filename):
     with open(filename, 'rb') as f:
-        vectors = []
         while True:
-            bytes = f.read(4)
-            if not bytes:
+            d = np.fromfile(f, dtype=np.int32, count=1)
+            if not d:
                 break
-            dim = struct.unpack('i', bytes)[0]
-            vector = np.fromfile(f, dtype=np.float32, count=dim)
-            vectors.append(vector)
-    return vectors
-
+            d = int(d[0])
+            vec = np.fromfile(f, dtype=np.float32, count=d)
+            yield vec
 
 def read_ivecs_file(filename):
     with open(filename, 'rb') as f:
