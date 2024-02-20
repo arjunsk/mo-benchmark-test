@@ -86,15 +86,15 @@ if __name__ == "__main__":
     actual_results = []
 
     options = {
-        "DBType": "postgres",
-        "DbName": "postgres",
-        # "DBType": "mysql",  # "mysql" or "postgres
-        # "DbName": "a",
+        # "DBType": "postgres",
+        # "DbName": "postgres",
+        "DBType": "mysql",
+        "DbName": "a",
         "OrgTblName": "t3",
         "OrgTblIdName": "a",
         "OrgTblSkName": "b",
         "OrgTblVecIdxName": "idx3",
-        "ProbeVal": 32,
+        "ProbeVal": 5,
         "K": 100,
     }
 
