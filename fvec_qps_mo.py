@@ -97,7 +97,6 @@ if __name__ == "__main__":
         exec_set_params(conn)
         for i, vec in enumerate(query_vectors):
             select_query = build_knn_query_template_with_ivfflat(vec, options)
-
             start_time = time.time()
             actual_results = execute_knn_query(select_query, conn)
             duration = time.time() - start_time
@@ -108,4 +107,4 @@ if __name__ == "__main__":
 
             average_recall = total_recall / (i + 1)
             qps = (i + 1) / total_duration
-            print(f"Recall: {average_recall:.4f}, Total Duration: {total_duration:.4f}s, QPS: {qps:.4f}")
+            print(f"Index: {i+1} Recall: {average_recall:.4f}, Total Duration: {total_duration:.4f}s, QPS: {qps:.4f}")
