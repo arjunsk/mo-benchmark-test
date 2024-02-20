@@ -47,16 +47,6 @@ def execute_knn_query(select_query, conn):
     return [id for id, in result.fetchall()]
 
 
-def calculate_recall(expected, actual):
-    set_expected = set(expected)
-    set_actual = set(actual)
-    intersection = set_expected.intersection(set_actual)
-    if not set_expected:
-        return 0.0
-    recall = len(intersection) / len(set_expected)
-    return recall
-
-
 def build_knn_query_template_with_ivfflat(input_vector_val, options):
     org_tbl_name = options['OrgTblName']
     org_tbl_id_name = options['OrgTblIdName']
@@ -73,10 +63,22 @@ def exec_set_params(conn):
     conn.execute(text(set_qry))
 
 
+def calc_recall(count: int, ground_truth: list[np.ndarray], got: list[int]) -> float:
+    ground_truth_set = set(np.concatenate(ground_truth))
+
+    match = np.zeros(count)
+    for idx, result in enumerate(got[:count]):
+        if result in ground_truth_set:
+            match[idx] = 1
+
+    return np.mean(match)
+
+
 if __name__ == "__main__":
     query_vectors = read_fvecs_file('/Users/arjunsunilkumar/Downloads/benchmark/1million128/sift/sift_query.fvecs')
     expected_results = read_ivecs_file(
         '/Users/arjunsunilkumar/Downloads/benchmark/1million128/sift/sift_groundtruth.ivecs')
+    actual_results = []
 
     options = {
         "DbName": "a",
@@ -90,21 +92,26 @@ if __name__ == "__main__":
 
     engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/a")
 
-    total_recall = 0
-    total_duration = 0
-
+    latencies, recalls = [], []
     with engine.connect() as conn:
         exec_set_params(conn)
         for i, vec in enumerate(query_vectors):
             select_query = build_knn_query_template_with_ivfflat(vec, options)
             start_time = time.time()
-            actual_results = execute_knn_query(select_query, conn)
+            actual_result = execute_knn_query(select_query, conn)
             duration = time.time() - start_time
-            total_duration += duration
 
-            recall = calculate_recall(expected_results[i], actual_results)
-            total_recall += recall
+            latencies.append(duration)
+            actual_results.append(actual_result)
 
-            average_recall = total_recall / (i + 1)
-            qps = (i + 1) / total_duration
-            print(f"Index: {i+1} Recall: {average_recall:.4f}, Total Duration: {total_duration:.4f}s, QPS: {qps:.4f}")
+            print(f"Query {i + 1} completed in {duration:.4f}s")
+            recalls.append(calc_recall(options["K"], [expected_results[i].astype(np.float32)], actual_result))
+
+            if i == 10:
+                break
+
+        avg_latency = round(np.mean(latencies), 4)
+        avg_recall = round(np.mean(recalls), 4)
+        cost = round(np.sum(latencies), 4)
+        qps = round(1 / avg_latency, 4)
+        print(f"Recall: {avg_recall:.4f}, Total Duration: {cost:.4f}s, Avg Latency: {avg_latency:.4f}, QPS: {qps:.4f}")
