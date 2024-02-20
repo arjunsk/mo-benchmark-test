@@ -4,7 +4,6 @@ from sqlalchemy import create_engine, text
 import numpy as np
 import struct
 
-
 def read_fvecs_file(filename, start=1, end=-1):
     vectors = []
     with open(filename, 'rb') as f:
@@ -62,7 +61,10 @@ def build_knn_query_template_with_ivfflat(input_vector_val, options):
 
 def exec_set_params(conn):
     probe_val = options['ProbeVal']
-    set_qry = f"SET @probe_limit={probe_val};"
+    if options['DBType'] == 'mysql':
+        set_qry = f"SET @probe_limit={probe_val};"
+    else:
+        set_qry = f"SET ivfflat.probe_limit={probe_val};"
     conn.execute(text(set_qry))
 
 
@@ -84,8 +86,10 @@ if __name__ == "__main__":
     actual_results = []
 
     options = {
-        "DBType": "mysql",
-        "DbName": "a",
+        "DBType": "postgres",
+        "DbName": "postgres",
+        # "DBType": "mysql",  # "mysql" or "postgres
+        # "DbName": "a",
         "OrgTblName": "t3",
         "OrgTblIdName": "a",
         "OrgTblSkName": "b",
@@ -95,9 +99,9 @@ if __name__ == "__main__":
     }
 
     if options["DBType"] == "mysql":
-        engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/a")
+        engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/"+options["DbName"])
     else:
-        engine = create_engine("postgresql+psycopg2://postgres:111@127.0.0.1:5432/a")
+        engine = create_engine("postgresql+psycopg2://postgres:111@127.0.0.1:5432/"+options["DbName"])
 
     latencies, recalls = [], []
     count = 0
