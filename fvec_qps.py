@@ -50,16 +50,16 @@ def calculate_recall(expected, actual):
 
 def build_knn_query_template_with_ivfflat(input_vector_val, options):
     org_tbl_name = options['OrgTblName']
-    org_tbl_sk_name = options['OrgTblSkName']
     org_tbl_id_name = options['OrgTblIdName']
+    org_tbl_sk_name = options['OrgTblSkName']
     k = options['K']
     probe_val = options['ProbeVal']
 
     input_vector_str = '[' + ','.join(map(str, input_vector_val)) + ']'
 
-    set_query = f"SET @probe_limit={probe_val};"
-    select_query = f"SELECT {org_tbl_id_name} FROM {org_tbl_name} ORDER BY l2_distance({org_tbl_sk_name},'{input_vector_str}') ASC LIMIT {k};"
-    return set_query, select_query
+    set_qry = f"SET @probe_limit={probe_val};"
+    sel_qry = f"SELECT {org_tbl_id_name} FROM {org_tbl_name} ORDER BY l2_distance({org_tbl_sk_name},'{input_vector_str}') ASC LIMIT {k};"
+    return set_qry, sel_qry
 
 
 if __name__ == "__main__":
