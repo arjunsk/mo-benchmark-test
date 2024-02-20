@@ -1,3 +1,5 @@
+import time
+
 from sqlalchemy import create_engine, text
 import numpy as np
 import struct
@@ -47,6 +49,7 @@ def execute_knn_query(set_query, select_query, engine):
         return [id for id, in result.fetchall()]
 
 
+
 def calculate_recall(expected, actual):
     set_expected = set(expected)
     set_actual = set(actual)
@@ -86,16 +89,23 @@ if __name__ == "__main__":
         "K": 100,
     }
 
-    total_recall = 0
 
     engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/a")
+
+    total_recall = 0
+    total_duration = 0
+
     for i, vec in enumerate(query_vectors):
         set_query, select_query = build_knn_query_template_with_ivfflat(vec, options)
+
+        start_time = time.time()
         actual_results = execute_knn_query(set_query, select_query, engine)
+        duration = time.time() - start_time
+        total_duration += duration
 
         recall = calculate_recall(expected_results[i], actual_results)
         total_recall += recall
-        print(f"Query {i + 1}: Recall = {recall:.4f}")
 
-    average_recall = total_recall / len(query_vectors) if query_vectors else 0
-    print(f"Average Recall: {average_recall:.4f}")
+        average_recall = total_recall / (i + 1)
+        qps = (i + 1) / total_duration
+        print(f"Recall: {average_recall:.4f}, Total Duration: {total_duration:.4f}s, QPS: {qps:.4f}")
