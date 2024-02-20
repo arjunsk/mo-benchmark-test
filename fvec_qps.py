@@ -29,7 +29,6 @@ def read_ivecs_file(filename):
     return vectors
 
 
-engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/a")
 
 
 def execute_knn_query(set_query, select_query, engine):
@@ -56,10 +55,8 @@ def build_knn_query_template_with_ivfflat(input_vector_val, options):
     k = options['K']
     probe_val = options['ProbeVal']
 
-    # Convert input_vector_val to a suitable string representation for your SQL dialect
-    input_vector_str = str(list(input_vector_val)).replace('[', '{').replace(']', '}')
+    input_vector_str = '[' + ','.join(map(str, input_vector_val)) + ']'
 
-    # Separate SET and SELECT queries
     set_query = f"SET @probe_limit={probe_val};"
     select_query = f"SELECT {org_tbl_id_name} FROM {org_tbl_name} ORDER BY l2_distance({org_tbl_sk_name},'{input_vector_str}') ASC LIMIT {k};"
     return set_query, select_query
@@ -82,6 +79,7 @@ if __name__ == "__main__":
 
     total_recall = 0
 
+    engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/a")
     for i, vec in enumerate(query_vectors):
         set_query, select_query = build_knn_query_template_with_ivfflat(vec, options)
         actual_results = execute_knn_query(set_query, select_query, engine)
