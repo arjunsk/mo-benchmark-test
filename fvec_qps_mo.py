@@ -100,9 +100,11 @@ if __name__ == "__main__":
         engine = create_engine("postgresql+psycopg2://postgres:111@127.0.0.1:5432/a")
 
     latencies, recalls = [], []
+    count = 0
     with engine.connect() as conn:
         exec_set_params(conn)
         for i, vec in enumerate(query_vectors):
+            count += 1
             select_query = build_knn_query_template_with_ivfflat(vec, options)
             start_time = time.time()
             actual_result = execute_knn_query(select_query, conn)
@@ -116,6 +118,6 @@ if __name__ == "__main__":
 
         avg_latency = round(np.mean(latencies), 4)
         avg_recall = round(np.mean(recalls), 4)
-        cost = round(np.sum(latencies), 4)
-        qps = round(1 / avg_latency, 4)
-        print(f"Recall: {avg_recall:.4f}, Total Duration: {cost:.4f}s, Avg Latency: {avg_latency:.4f}, QPS: {qps:.4f}")
+        total_duration = round(np.sum(latencies), 4)
+        qps = round(count / total_duration, 4)
+        print(f"Recall: {avg_recall:.4f}, Total Duration: {total_duration:.4f}s, Avg Latency: {avg_latency:.4f}, QPS: {qps:.4f}")
