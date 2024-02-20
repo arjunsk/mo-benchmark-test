@@ -53,7 +53,10 @@ def build_knn_query_template_with_ivfflat(input_vector_val, options):
     org_tbl_sk_name = options['OrgTblSkName']
     k = options['K']
     input_vector_str = '[' + ','.join(map(str, input_vector_val)) + ']'
-    sel_qry = f"SELECT {org_tbl_id_name} FROM {org_tbl_name} ORDER BY l2_distance({org_tbl_sk_name},'{input_vector_str}') ASC LIMIT {k};"
+    if options['DBType'] == 'mysql':
+        sel_qry = f"SELECT {org_tbl_id_name} FROM {org_tbl_name} ORDER BY l2_distance({org_tbl_sk_name},'{input_vector_str}') ASC LIMIT {k};"
+    else:
+        sel_qry = f"SELECT {org_tbl_id_name}-1 FROM {org_tbl_name} ORDER BY {org_tbl_sk_name}<->'{input_vector_str}' ASC LIMIT {k};"
     return sel_qry
 
 
@@ -81,6 +84,7 @@ if __name__ == "__main__":
     actual_results = []
 
     options = {
+        "DBType": "mysql",
         "DbName": "a",
         "OrgTblName": "t3",
         "OrgTblIdName": "a",
@@ -90,7 +94,10 @@ if __name__ == "__main__":
         "K": 100,
     }
 
-    engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/a")
+    if options["DBType"] == "mysql":
+        engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/a")
+    else:
+        engine = create_engine("postgresql+psycopg2://postgres:111@127.0.0.1:5432/a")
 
     latencies, recalls = [], []
     with engine.connect() as conn:
