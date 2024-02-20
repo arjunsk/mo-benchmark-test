@@ -42,12 +42,9 @@ def read_ivecs_file(filename):
     return vectors
 
 
-def execute_knn_query(set_query, select_query, engine):
-    with engine.connect() as conn:
-        conn.execute(text(set_query))
-        result = conn.execute(text(select_query))
-        return [id for id, in result.fetchall()]
-
+def execute_knn_query(select_query, conn):
+    result = conn.execute(text(select_query))
+    return [id for id, in result.fetchall()]
 
 
 def calculate_recall(expected, actual):
@@ -65,13 +62,15 @@ def build_knn_query_template_with_ivfflat(input_vector_val, options):
     org_tbl_id_name = options['OrgTblIdName']
     org_tbl_sk_name = options['OrgTblSkName']
     k = options['K']
-    probe_val = options['ProbeVal']
-
     input_vector_str = '[' + ','.join(map(str, input_vector_val)) + ']'
-
-    set_qry = f"SET @probe_limit={probe_val};"
     sel_qry = f"SELECT {org_tbl_id_name} FROM {org_tbl_name} ORDER BY l2_distance({org_tbl_sk_name},'{input_vector_str}') ASC LIMIT {k};"
-    return set_qry, sel_qry
+    return sel_qry
+
+
+def exec_set_params(conn):
+    probe_val = options['ProbeVal']
+    set_qry = f"SET @probe_limit={probe_val};"
+    conn.execute(text(set_qry))
 
 
 if __name__ == "__main__":
@@ -89,23 +88,24 @@ if __name__ == "__main__":
         "K": 100,
     }
 
-
     engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/a")
 
     total_recall = 0
     total_duration = 0
 
-    for i, vec in enumerate(query_vectors):
-        set_query, select_query = build_knn_query_template_with_ivfflat(vec, options)
+    with engine.connect() as conn:
+        exec_set_params(conn)
+        for i, vec in enumerate(query_vectors):
+            select_query = build_knn_query_template_with_ivfflat(vec, options)
 
-        start_time = time.time()
-        actual_results = execute_knn_query(set_query, select_query, engine)
-        duration = time.time() - start_time
-        total_duration += duration
+            start_time = time.time()
+            actual_results = execute_knn_query(select_query, conn)
+            duration = time.time() - start_time
+            total_duration += duration
 
-        recall = calculate_recall(expected_results[i], actual_results)
-        total_recall += recall
+            recall = calculate_recall(expected_results[i], actual_results)
+            total_recall += recall
 
-        average_recall = total_recall / (i + 1)
-        qps = (i + 1) / total_duration
-        print(f"Recall: {average_recall:.4f}, Total Duration: {total_duration:.4f}s, QPS: {qps:.4f}")
+            average_recall = total_recall / (i + 1)
+            qps = (i + 1) / total_duration
+            print(f"Recall: {average_recall:.4f}, Total Duration: {total_duration:.4f}s, QPS: {qps:.4f}")
