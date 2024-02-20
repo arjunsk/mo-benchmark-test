@@ -64,7 +64,7 @@ def exec_set_params(conn):
     if options['DBType'] == 'mysql':
         set_qry = f"SET @probe_limit={probe_val};"
     else:
-        set_qry = f"SET ivfflat.probe_limit={probe_val};"
+        set_qry = f"SET ivfflat.probes={probe_val};"
     conn.execute(text(set_qry))
 
 
@@ -99,9 +99,9 @@ if __name__ == "__main__":
     }
 
     if options["DBType"] == "mysql":
-        engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/"+options["DbName"])
+        engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/" + options["DbName"])
     else:
-        engine = create_engine("postgresql+psycopg2://postgres:111@127.0.0.1:5432/"+options["DbName"])
+        engine = create_engine("postgresql+psycopg2://postgres:111@127.0.0.1:5432/" + options["DbName"])
 
     latencies, recalls = [], []
     count = 0
@@ -124,4 +124,5 @@ if __name__ == "__main__":
         avg_recall = round(np.mean(recalls), 4)
         total_duration = round(np.sum(latencies), 4)
         qps = round(count / total_duration, 4)
-        print(f"Recall: {avg_recall:.4f}, Total Duration: {total_duration:.4f}s, Avg Latency: {avg_latency:.4f}, QPS: {qps:.4f}")
+        print(
+            f"Recall: {avg_recall:.4f}, Total Duration: {total_duration:.4f}s, Avg Latency: {avg_latency:.4f}, QPS: {qps:.4f}")
