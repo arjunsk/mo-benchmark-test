@@ -3,15 +3,29 @@ import numpy as np
 import struct
 
 
-def read_fvecs_file(filename):
+def read_fvecs_file(filename, start=1, end=-1):
+    vectors = []
     with open(filename, 'rb') as f:
+        current_index = 1
         while True:
-            d = np.fromfile(f, dtype=np.int32, count=1)
-            if not d:
+            bytes_read = f.read(4)
+            if not bytes_read:
                 break
-            d = int(d[0])
-            vec = np.fromfile(f, dtype=np.float32, count=d)
-            yield vec
+            d, = struct.unpack('i', bytes_read)
+
+            if start <= current_index <= end or (current_index >= start and end == -1):
+                vec = np.fromfile(f, dtype=np.float32, count=d)
+                vectors.append(vec)
+            else:
+                f.seek(d * 4, 1)
+
+            if end != -1 and current_index >= end:
+                break
+
+            current_index += 1
+
+    return vectors
+
 
 def read_ivecs_file(filename):
     with open(filename, 'rb') as f:
@@ -24,8 +38,6 @@ def read_ivecs_file(filename):
             vector = np.fromfile(f, dtype=np.int32, count=dim)
             vectors.append(vector)
     return vectors
-
-
 
 
 def execute_knn_query(set_query, select_query, engine):
@@ -60,7 +72,7 @@ def build_knn_query_template_with_ivfflat(input_vector_val, options):
 
 
 if __name__ == "__main__":
-    query_vectors = read_fvecs_file('/Users/arjunsunilkumar/Downloads/benchmark/1million128/sift/sift_base.fvecs')
+    query_vectors = read_fvecs_file('/Users/arjunsunilkumar/Downloads/benchmark/1million128/sift/sift_query.fvecs')
     expected_results = read_ivecs_file(
         '/Users/arjunsunilkumar/Downloads/benchmark/1million128/sift/sift_groundtruth.ivecs')
 
