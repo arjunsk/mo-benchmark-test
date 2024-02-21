@@ -1,5 +1,8 @@
-# CREATE EXTENSION vector;
-# CREATE TABLE t3 (a bigserial, b vector(128));
+"""
+CREATE EXTENSION vector;
+CREATE TABLE t3 (a bigserial, b vector(128));
+CREATE INDEX idx3 ON t3 USING ivfflat (b vector_l2_ops) WITH (lists = 500);
+"""
 
 import time
 import numpy as np
