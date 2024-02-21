@@ -2,6 +2,7 @@
 create database a;
 use a;
 create table t3(a int, b vecf32(128));
+create index idx3 using ivfflat on t3(b) lists=500 op_type "vector_l2_ops";
 """
 import binascii
 import time

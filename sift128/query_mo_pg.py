@@ -86,10 +86,10 @@ if __name__ == "__main__":
     actual_results = []
 
     options = {
-        "DBType": "postgres",
-        "DbName": "postgres",
-        # "DBType": "mysql",
-        # "DbName": "a",
+        # "DBType": "postgres",
+        # "DbName": "postgres",
+        "DBType": "mysql",
+        "DbName": "a",
         "OrgTblName": "t3",
         "OrgTblIdName": "a",
         "OrgTblSkName": "b",
@@ -119,6 +119,8 @@ if __name__ == "__main__":
 
             print(f"Query {i + 1} completed in {duration:.4f}s")
             recalls.append(calc_recall(options["K"], [expected_results[i].astype(np.float32)], actual_result))
+            if i == 500:
+                break
 
         avg_latency = round(np.mean(latencies), 4)
         avg_recall = round(np.mean(recalls), 4)
