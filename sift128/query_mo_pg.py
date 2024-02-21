@@ -93,7 +93,6 @@ if __name__ == "__main__":
         "OrgTblName": "t3",
         "OrgTblIdName": "a",
         "OrgTblSkName": "b",
-        "OrgTblVecIdxName": "idx3",
         "ProbeVal": 5,
         "K": 100,
     }
