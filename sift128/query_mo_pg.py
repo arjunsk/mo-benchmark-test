@@ -110,6 +110,8 @@ if __name__ == "__main__":
             count += 1
             select_query = build_knn_query_template_with_ivfflat(vec, options)
             start_time = time.perf_counter()
+            # print(select_query)
+            # break
             actual_result = execute_knn_query(select_query, conn)
             duration = time.perf_counter() - start_time
 
