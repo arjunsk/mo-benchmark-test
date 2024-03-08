@@ -18,11 +18,11 @@ class Tbl(Base):
     a100 = Column(String(10), primary_key=True)
 
 
-def generate_random_string(length=10):
-    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
+def generate_random_string(a, b):
+    random_ascii = random.randint(ord(a), ord(b))
+    return chr(random_ascii)
 
-
-def run_queries(n=100):
+def run_queries(n=1000):
     total_time = 0
     for _ in range(n):
 
@@ -30,16 +30,17 @@ def run_queries(n=100):
         for i in range(1, 10):
             attr = getattr(Tbl, f'a{i}', None)
             if attr is not None:
-                start_range, end_range = sorted([generate_random_string(), generate_random_string()])
+                start_range, end_range = sorted([generate_random_string('0','a'), generate_random_string('a','{')])
                 conditions.append(attr.between(start_range, end_range))
 
         start_time = time.time()
         query = select(Tbl).where(*conditions)
-        # print(str(query.compile(compile_kwargs={"literal_binds": True})))
         results = session.execute(query).all()
         total_time += time.time() - start_time
 
-        print(f"Query 1 returned {len(results)} results.")
+        if len(results) > 20:
+            # print(str(query.compile(compile_kwargs={"literal_binds": True})))
+            print(f"Found {len(results)} rows.")
 
     qps = n / total_time
     return qps
