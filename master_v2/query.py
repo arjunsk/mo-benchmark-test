@@ -27,10 +27,10 @@ def run_queries(n=1000):
     for _ in range(n):
 
         conditions = []
-        for i in range(1, 10):
+        for i in range(1, 100):
             attr = getattr(Tbl, f'a{i}', None)
             if attr is not None:
-                start_range, end_range = sorted([generate_random_string('0','a'), generate_random_string('a','{')])
+                start_range, end_range = sorted([generate_random_string('0','9'), generate_random_string('y','{')])
                 conditions.append(attr.between(start_range, end_range))
 
         start_time = time.time()
@@ -38,7 +38,7 @@ def run_queries(n=1000):
         results = session.execute(query).all()
         total_time += time.time() - start_time
 
-        if len(results) > 20:
+        if len(results) > 0:
             # print(str(query.compile(compile_kwargs={"literal_binds": True})))
             print(f"Found {len(results)} rows.")
 
