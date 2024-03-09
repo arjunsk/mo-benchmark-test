@@ -21,6 +21,8 @@ Query OK, 0 rows affected (39.78 sec)
 
 
 """
+import time
+
 from sqlalchemy import create_engine, Column, String
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base
@@ -38,6 +40,7 @@ class Tbl(Base):
     __tablename__ = 'tbl'
     locals().update({f'a{i}': Column(String(10)) for i in range(1, 100)})
     a100 = Column(String(10), primary_key=True)
+
 
 Base.metadata.create_all(engine)
 session = Session()
@@ -61,4 +64,7 @@ def insert_random_rows(n=10_000, batch_size=1_000):
         print(f"Inserted {batch_start + batch_size} rows into 'tbl'.")
 
 
+start = time.time()
 insert_random_rows()
+end = time.time()
+print(f"Time taken to insert rows: {end - start} seconds.")
