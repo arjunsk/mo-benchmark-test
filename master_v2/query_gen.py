@@ -25,7 +25,7 @@ def generate_random_string(a, b):
     return chr(random_ascii)
 
 
-def run_queries(n=10):
+def run_queries(n=1000):
     total_time = 0
     with open('query_results.csv', mode='w', newline='') as result_file, open('query_strings.csv', mode='w', newline='') as query_file:
         result_writer = csv.writer(result_file)
