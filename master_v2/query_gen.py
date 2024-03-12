@@ -1,6 +1,6 @@
 import csv
 
-from sqlalchemy import create_engine, select, Column, String
+from sqlalchemy import create_engine, select, Column, String, func
 from sqlalchemy.orm import sessionmaker, declarative_base  # Updated import here
 import random
 import string
@@ -20,23 +20,37 @@ class Tbl(Base):
     a100 = Column(String(10), primary_key=True)
 
 
-def generate_random_string(a, b):
-    random_ascii = random.randint(ord(a), ord(b))
-    return chr(random_ascii)
+def get_column_values(table, column_name):
+    column = getattr(table, column_name, None)
+    if column is not None:
+        try:
+            query = session.query(column).distinct()
+            # query = query.order_by(func.random())
+            query = query.limit(1)
+            values = query.all()
+            values_list = [value[0] for value in values]
+            return values_list
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return []
+    else:
+        print(f"Column {column_name} not found in table.")
+        return []
 
 
 def run_queries(n=1000):
     total_time = 0
-    with open('query_results.csv', mode='w', newline='') as result_file, open('query_strings.csv', mode='w', newline='') as query_file:
+    with open('query_results.csv', mode='w', newline='') as result_file, open('query_strings.csv', mode='w',
+                                                                              newline='') as query_file:
         result_writer = csv.writer(result_file)
         query_writer = csv.writer(query_file)
         for _ in range(n):
             conditions = []
-            for i in range(1, 100):
-                attr = getattr(Tbl, f'a{i}', None)
-                if attr is not None:
-                    start_range, end_range = sorted([generate_random_string('0', '3'), generate_random_string('y', '{')])
-                    conditions.append(attr.between(start_range, end_range))
+            random_column_number = random.randint(1, 100)
+            column_values = get_column_values(Tbl, f'a{random_column_number}')
+            attr = getattr(Tbl, f'a{random_column_number}', None)
+            if attr is not None:
+                conditions = [attr == column_values[0]]
 
             start_time = time.time()
             query = select(Tbl.a100).where(*conditions)
