@@ -42,8 +42,9 @@ def run_queries():
 
             flattened_result = [str(item) for sublist in result for item in sublist]
             if sorted(flattened_result) != sorted(expected_result):
-                print("Result does not match the expected output. len(result):", len(result), "len(expected_result):",
-                      len(expected_result))
+                print("len(result):", len(result), "len(expected_result):",len(expected_result))
+                print(query_str)
+                # break
 
             if n % 100 == 0:
                 print(f"Processed {n} queries.")
