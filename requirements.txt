@@ -1,0 +1,17 @@
+asyncmy==0.2.9
+greenlet==3.0.3
+mysqlclient==2.2.1
+numpy==1.26.3
+pandas==2.1.4
+pgvector==0.2.5
+pool==0.1.2.dev0
+psycopg2-binary==2.9.9
+pyarrow==14.0.2
+PyMySQL==1.1.0
+pymysql-pool==0.4.6
+python-dateutil==2.8.2
+pytz==2023.3.post1
+six==1.16.0
+SQLAlchemy==2.0.25
+typing_extensions==4.7.1
+tzdata==2023.4
