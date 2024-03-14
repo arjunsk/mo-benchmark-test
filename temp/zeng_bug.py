@@ -14,7 +14,7 @@ from sqlalchemy.orm import sessionmaker
 
 table_name = "activations"  # replace with t1, t2 and activations.
 vec_len = 4000
-num_inserts = 100_000
+num_inserts = 10_000
 
 
 def to_db_binary(value, dim=None):
