@@ -53,8 +53,8 @@ def run():
 
     for i in range(0, len(binVecList)):
         session.execute(sql_insert, {"id": i, "data": binVecList[i]})
-        # if i % 1000 == 0:
-        #     print(f"inserted {i}")
+        if i % 1000 == 0:
+            print(f"inserted {i}")
 
     # commit last
     session.commit()
