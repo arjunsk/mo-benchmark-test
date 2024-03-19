@@ -13,37 +13,34 @@ def to_db_binary(value):
     if value is None:
         return value
 
-    value = np.asarray(value, dtype='<f')
-
+    value = np.asarray(value, dtype='<f4')
     if value.ndim != 1:
         raise ValueError('expected ndim to be 1')
 
-    return binascii.b2a_hex(value)
+    return binascii.b2a_hex(value.tobytes()).decode('utf-8')
 
 
 def run():
-    # Connect using mysqlclient (MySQLdb)
     engine = create_engine("mysql+mysqldb://root:111@127.0.0.1:6001/")
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    # Creating the database and table
     session.execute(text("DROP DATABASE IF EXISTS vecdb;"))
     session.commit()
 
     session.execute(text("CREATE DATABASE vecdb;"))
     session.execute(text("USE vecdb;"))
     session.execute(text("DROP TABLE IF EXISTS "+table_name+";"))
-    session.execute(text("CREATE TABLE "+table_name+"(id INT, one_k_vector VARCHAR(1024));"))
+    session.execute(text("CREATE TABLE "+table_name+"(id INT, one_k_vector VECF32(128));"))
     session.commit()
 
-    sql_insert = text("INSERT INTO "+table_name+" (id, one_k_vector) VALUES (:id, :data);")
+    sql_insert = text("INSERT INTO "+table_name+" (id, one_k_vector) VALUES (:id, decode(:data,'hex'));")
     for i in range(num_inserts):
         arr = np.random.rand(vec_len)
         arr = np.asarray(arr, dtype='<f')
         session.execute(sql_insert, {"id": i, "data": to_db_binary(arr)})
         if i % 1000 == 0:
-            print(f"inserted {i}")
+            print(f"inserted {i} rows")
     session.commit()
 
 
