@@ -53,7 +53,8 @@ def run():
     duration = time.time() - start_time
     print(f"Result: vector dim={vec_len} vectors "
           f"inserted={num_inserts} "
-          f"insert/second={num_inserts / duration}")
+          f"insert/second={num_inserts / duration} "
+          f"duration={duration}")
 
 
 def main():
