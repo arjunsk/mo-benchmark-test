@@ -80,9 +80,9 @@ def calc_recall(count: int, ground_truth: list[np.ndarray], got: list[int]) -> f
 
 
 if __name__ == "__main__":
-    query_vectors = read_fvecs_file('/Users/arjunsunilkumar/Downloads/benchmark/1million128/sift/sift_query.fvecs')
+    query_vectors = read_fvecs_file('/Users/arjunsunilkumar/Downloads/benchmark/1million/gist/gist_query.fvecs')
     expected_results = read_ivecs_file(
-        '/Users/arjunsunilkumar/Downloads/benchmark/1million128/sift/sift_groundtruth.ivecs')
+        '/Users/arjunsunilkumar/Downloads/benchmark/1million/gist/gist_groundtruth.ivecs')
     actual_results = []
 
     options = {
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         # "DbName": "postgres",
         "DBType": "mysql",
         "DbName": "a",
-        "OrgTblName": "t3",
+        "OrgTblName": "t5",
         "OrgTblIdName": "a",
         "OrgTblSkName": "b",
         "ProbeVal": 5,
